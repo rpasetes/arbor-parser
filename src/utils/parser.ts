@@ -1,0 +1,112 @@
+import * as ts from 'typescript';
+
+export type LanguageMode = 'javascript' | 'typescript';
+
+export interface ParseResult {
+  success: true;
+  ast: ts.SourceFile;
+}
+
+export interface ParseError {
+  success: false;
+  error: string;
+  line?: number;
+  column?: number;
+}
+
+/**
+ * Parse source code into an Abstract Syntax Tree (AST)
+ *
+ * PARSING INSIGHT #1: Two-Phase Process
+ * ==============================================
+ * When you write code, the compiler does two main things:
+ * 1. LEXICAL ANALYSIS (tokenization): "const x = 5" → [CONST, IDENTIFIER, EQUALS, NUMBER]
+ * 2. SYNTACTIC ANALYSIS (parsing): tokens → tree structure
+ *
+ * TypeScript's createSourceFile() does BOTH phases for us in one call!
+ * It returns a SourceFile node, which is the root of the entire AST.
+ *
+ * PARSING INSIGHT #2: Why Trees?
+ * ==============================================
+ * Code has nested structure:
+ *   if (x > 5) { return x * 2; }
+ *
+ * The tree captures this nesting:
+ *   IfStatement
+ *   ├── condition: BinaryExpression (x > 5)
+ *   └── thenStatement: Block
+ *       └── ReturnStatement
+ *           └── expression: BinaryExpression (x * 2)
+ *
+ * This structure is what lets the engine know: "evaluate condition first,
+ * then decide whether to execute the block."
+ */
+export function parseCode(
+  sourceCode: string,
+  mode: LanguageMode = 'javascript'
+): ParseResult | ParseError {
+  try {
+    // Choose the appropriate ScriptKind based on language mode
+    // ScriptKind tells the parser what syntax rules to apply
+    const scriptKind = mode === 'typescript' ? ts.ScriptKind.TS : ts.ScriptKind.JS;
+
+    /**
+     * PARSING INSIGHT #3: Parser Configuration
+     * ==============================================
+     * createSourceFile parameters:
+     * 1. fileName: Just for error messages (not actually reading a file)
+     * 2. sourceCode: The actual code string to parse
+     * 3. languageVersion: ES2020, ES2015, etc. (we use Latest for max features)
+     * 4. setParentNodes: true = each node knows its parent (useful for traversal)
+     * 5. scriptKind: JS vs TS syntax rules
+     */
+    const ast = ts.createSourceFile(
+      mode === 'typescript' ? 'temp.ts' : 'temp.js',
+      sourceCode,
+      ts.ScriptTarget.Latest,
+      true, // setParentNodes
+      scriptKind
+    );
+
+    /**
+     * PARSING INSIGHT #4: Error Recovery
+     * ==============================================
+     * TypeScript's parser is "fault-tolerant" - it tries to parse as much
+     * as it can even with syntax errors. This is crucial for IDEs that need
+     * to provide completions even when your code isn't perfect yet.
+     *
+     * For the MVP, we'll skip detailed error checking and just return the AST.
+     * If parsing fails catastrophically, the try-catch will handle it.
+     */
+
+    return {
+      success: true,
+      ast,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown parsing error',
+    };
+  }
+}
+
+/**
+ * Get a human-readable name for a SyntaxKind enum value
+ *
+ * PARSING INSIGHT #5: Node Types
+ * ==============================================
+ * Every node in the AST has a "kind" property - a number that identifies
+ * what type of syntax element it represents. TypeScript has 300+ different
+ * SyntaxKind values!
+ *
+ * Examples:
+ * - SyntaxKind.Identifier = 80
+ * - SyntaxKind.BinaryExpression = 226
+ * - SyntaxKind.FunctionDeclaration = 261
+ *
+ * This function converts the number back to a readable string.
+ */
+export function getNodeTypeName(kind: ts.SyntaxKind): string {
+  return ts.SyntaxKind[kind];
+}
