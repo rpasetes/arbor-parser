@@ -1,7 +1,5 @@
 import * as ts from 'typescript';
 
-export type LanguageMode = 'javascript' | 'typescript';
-
 export interface ParseResult {
   success: true;
   ast: ts.SourceFile;
@@ -42,30 +40,28 @@ export interface ParseError {
  * then decide whether to execute the block."
  */
 export function parseCode(
-  sourceCode: string,
-  mode: LanguageMode = 'javascript'
+  sourceCode: string
 ): ParseResult | ParseError {
   try {
-    // Choose the appropriate ScriptKind based on language mode
-    // ScriptKind tells the parser what syntax rules to apply
-    const scriptKind = mode === 'typescript' ? ts.ScriptKind.TS : ts.ScriptKind.JS;
-
     /**
      * PARSING INSIGHT #3: Parser Configuration
      * ==============================================
+     * We always use TypeScript mode since it's a superset of JavaScript.
+     * This means it can parse both regular JS and TS with type annotations.
+     *
      * createSourceFile parameters:
      * 1. fileName: Just for error messages (not actually reading a file)
      * 2. sourceCode: The actual code string to parse
      * 3. languageVersion: ES2020, ES2015, etc. (we use Latest for max features)
      * 4. setParentNodes: true = each node knows its parent (useful for traversal)
-     * 5. scriptKind: JS vs TS syntax rules
+     * 5. scriptKind: TS mode handles both JS and TS syntax
      */
     const ast = ts.createSourceFile(
-      mode === 'typescript' ? 'temp.ts' : 'temp.js',
+      'temp.ts',
       sourceCode,
       ts.ScriptTarget.Latest,
       true, // setParentNodes
-      scriptKind
+      ts.ScriptKind.TS
     );
 
     /**

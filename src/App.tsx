@@ -1,7 +1,7 @@
-import { useState } from 'react';
-import { parseCode, LanguageMode } from './utils/parser';
-import { CodeEditor } from './components/CodeEditor';
-import { ASTTree } from './components/ASTTree';
+import { useState } from "react";
+import { parseCode } from "./utils/parser";
+import { CodeEditor } from "./components/CodeEditor";
+import { BlobVisualization } from "./components/BlobVisualization";
 
 /**
  * Main App Component
@@ -19,74 +19,82 @@ import { ASTTree } from './components/ASTTree';
  * whether it's JavaScript, TypeScript, Python, Rust, or C++.
  */
 function App() {
-  const [sourceCode, setSourceCode] = useState('const add = (a, b) => a + b');
-  const [languageMode, setLanguageMode] = useState<LanguageMode>('javascript');
+  const [sourceCode, setSourceCode] = useState("const x = 1 + 2");
 
-  // Parse the code whenever it changes
-  const parseResult = parseCode(sourceCode, languageMode);
+  // Parse the code whenever it changes (always using TypeScript mode)
+  const parseResult = parseCode(sourceCode);
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      display: 'flex',
-      flexDirection: 'column',
-    }}>
+    <div
+      style={{
+        minHeight: "100vh",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
       {/* Header */}
-      <div style={{
-        textAlign: 'center',
-        padding: '2rem',
-        borderBottom: '1px solid #444',
-      }}>
-        <h1 style={{ fontSize: '2.5rem', marginBottom: '0.5rem', margin: 0 }}>
+      <div
+        style={{
+          textAlign: "center",
+          padding: "2rem",
+          borderBottom: "1px solid #444",
+        }}
+      >
+        <h1 style={{ fontSize: "2.5rem", marginBottom: "0.5rem", margin: 0 }}>
           Compile Time
         </h1>
-        <p style={{ color: '#aaa', fontSize: '1.1rem', margin: '0.5rem 0 0 0' }}>
+        <p
+          style={{ color: "#aaa", fontSize: "1.1rem", margin: "0.5rem 0 0 0" }}
+        >
           Watch your code transform into a tree. This is what the engine sees.
         </p>
       </div>
 
       {/* Split layout: Editor left, Tree right */}
-      <div style={{
-        display: 'flex',
-        flex: 1,
-        overflow: 'hidden',
-      }}>
+      <div
+        style={{
+          display: "flex",
+          flex: 1,
+          overflow: "hidden",
+        }}
+      >
         {/* Left half: Code Editor */}
-        <div style={{
-          width: '50%',
-          padding: '1rem',
-          display: 'flex',
-          flexDirection: 'column',
-          overflow: 'hidden',
-        }}>
-          <CodeEditor
-            value={sourceCode}
-            onChange={setSourceCode}
-            mode={languageMode}
-            onModeChange={setLanguageMode}
-          />
+        <div
+          style={{
+            width: "50%",
+            padding: "1rem",
+            display: "flex",
+            flexDirection: "column",
+            overflow: "hidden",
+          }}
+        >
+          <CodeEditor value={sourceCode} onChange={setSourceCode} />
         </div>
 
-        {/* Right half: AST Tree */}
-        <div style={{
-          width: '50%',
-          padding: '1rem',
-          overflowY: 'auto',
-          overflowX: 'auto',
-        }}>
+        {/* Right half: Blob Visualization */}
+        <div
+          style={{
+            width: "50%",
+            padding: "1rem",
+            overflowY: "auto",
+            overflowX: "auto",
+          }}
+        >
           {parseResult.success ? (
-            <ASTTree ast={parseResult.ast} />
+            <BlobVisualization ast={parseResult.ast} />
           ) : (
-            <div style={{
-              padding: '1rem',
-              backgroundColor: '#3a1a1a',
-              border: '1px solid #844',
-              borderRadius: '4px',
-              color: '#faa',
-            }}>
+            <div
+              style={{
+                padding: "1rem",
+                backgroundColor: "#3a1a1a",
+                border: "1px solid #844",
+                borderRadius: "4px",
+                color: "#faa",
+              }}
+            >
               <strong>Parse Error:</strong> {parseResult.error}
               {parseResult.line && parseResult.column && (
-                <div style={{ marginTop: '0.5rem', fontSize: '0.9rem' }}>
+                <div style={{ marginTop: "0.5rem", fontSize: "0.9rem" }}>
                   Line {parseResult.line}, Column {parseResult.column}
                 </div>
               )}
