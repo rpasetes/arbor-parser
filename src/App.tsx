@@ -2,6 +2,8 @@ import { useState } from "react";
 import { parseCode } from "./utils/parser";
 import { CodeEditor } from "./components/CodeEditor";
 import { BlobVisualization } from "./components/BlobVisualization";
+import { ASTTree } from "./components/ASTTree";
+import { SegmentedControl } from "./components/SegmentedControl";
 
 /**
  * Main App Component
@@ -20,6 +22,7 @@ import { BlobVisualization } from "./components/BlobVisualization";
  */
 function App() {
   const [sourceCode, setSourceCode] = useState("const x = 1 + 2");
+  const [vizMode, setVizMode] = useState<'tree' | 'rings'>('tree');
 
   // Parse the code whenever it changes (always using TypeScript mode)
   const parseResult = parseCode(sourceCode);
@@ -71,35 +74,55 @@ function App() {
           <CodeEditor value={sourceCode} onChange={setSourceCode} />
         </div>
 
-        {/* Right half: Blob Visualization */}
+        {/* Right half: Visualization */}
         <div
           style={{
             width: "50%",
             padding: "1rem",
-            overflowY: "auto",
-            overflowX: "auto",
+            display: "flex",
+            flexDirection: "column",
+            position: "relative",
           }}
         >
-          {parseResult.success ? (
-            <BlobVisualization ast={parseResult.ast} />
-          ) : (
-            <div
-              style={{
-                padding: "1rem",
-                backgroundColor: "#3a1a1a",
-                border: "1px solid #844",
-                borderRadius: "4px",
-                color: "#faa",
-              }}
-            >
-              <strong>Parse Error:</strong> {parseResult.error}
-              {parseResult.line && parseResult.column && (
-                <div style={{ marginTop: "0.5rem", fontSize: "0.9rem" }}>
-                  Line {parseResult.line}, Column {parseResult.column}
-                </div>
-              )}
-            </div>
-          )}
+          {/* Visualization Toggle - fixed to left */}
+          <div style={{
+            marginBottom: "1rem",
+            alignSelf: "flex-start",
+          }}>
+            <SegmentedControl
+              options={['Tree', 'Rings']}
+              selected={vizMode}
+              onChange={(mode) => setVizMode(mode as 'tree' | 'rings')}
+            />
+          </div>
+
+          {/* Scrollable viz container */}
+          <div style={{ flex: 1, overflowY: "auto", overflowX: "auto" }}>
+            {parseResult.success ? (
+              vizMode === 'tree' ? (
+                <ASTTree ast={parseResult.ast} />
+              ) : (
+                <BlobVisualization ast={parseResult.ast} />
+              )
+            ) : (
+              <div
+                style={{
+                  padding: "1rem",
+                  backgroundColor: "#3a1a1a",
+                  border: "1px solid #844",
+                  borderRadius: "4px",
+                  color: "#faa",
+                }}
+              >
+                <strong>Parse Error:</strong> {parseResult.error}
+                {parseResult.line && parseResult.column && (
+                  <div style={{ marginTop: "0.5rem", fontSize: "0.9rem" }}>
+                    Line {parseResult.line}, Column {parseResult.column}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
