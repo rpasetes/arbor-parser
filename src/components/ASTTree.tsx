@@ -1,5 +1,5 @@
-import * as ts from 'typescript';
-import { ASTNode } from './ASTNode';
+import * as ts from "typescript";
+import { ASTNode } from "./ASTNode";
 
 interface ASTTreeProps {
   ast: ts.SourceFile;
@@ -28,20 +28,23 @@ interface ASTTreeProps {
  */
 export function ASTTree({ ast, onNodeClick, highlightedNode }: ASTTreeProps) {
   return (
-    <div style={{
-      width: '100%',
-      height: '100%',
-      padding: '0.75rem',
-      backgroundColor: '#1a1a1a',
-      border: '1px solid #444',
-      borderRadius: '4px',
-      display: 'flex',
-      flexDirection: 'column',
-    }}>
-      <h2 style={{ marginTop: 0, marginBottom: '0.75rem', fontSize: '1.2rem' }}>
+    <div
+      style={{
+        width: "100%",
+        height: "100%",
+        padding: "0.75rem",
+        backgroundColor: "#1a1a1a",
+        border: "1px solid #444",
+        borderRadius: "4px",
+        display: "flex",
+        flexDirection: "column",
+        boxSizing: "border-box",
+      }}
+    >
+      <h2 style={{ marginTop: 0, marginBottom: "0.75rem", fontSize: "1.2rem" }}>
         Abstract Syntax Tree
       </h2>
-      <div style={{ flex: 1, overflowY: 'auto', overflowX: 'auto' }}>
+      <div style={{ flex: 1, overflowY: "auto", overflowX: "auto" }}>
         <TreeNode
           node={ast}
           onNodeClick={onNodeClick}
@@ -72,11 +75,13 @@ function TreeNode({ node, onNodeClick, highlightedNode }: TreeNodeProps) {
   const isHighlighted = node === highlightedNode;
 
   return (
-    <div style={{
-      display: 'flex',
-      flexDirection: 'column',
-      gap: '0.5rem',
-    }}>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: "0.5rem",
+      }}
+    >
       {/* Render this node */}
       <ASTNode
         node={node}
@@ -86,14 +91,16 @@ function TreeNode({ node, onNodeClick, highlightedNode }: TreeNodeProps) {
 
       {/* Recursively render children with indentation */}
       {children.length > 0 && (
-        <div style={{
-          marginLeft: '2rem',
-          paddingLeft: '1rem',
-          borderLeft: '2px solid #444',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '0.5rem',
-        }}>
+        <div
+          style={{
+            marginLeft: "2rem",
+            paddingLeft: "1rem",
+            borderLeft: "2px solid #444",
+            display: "flex",
+            flexDirection: "column",
+            gap: "0.5rem",
+          }}
+        >
           {children.map((child, index) => (
             <TreeNode
               key={`${child.kind}-${child.pos}-${index}`}

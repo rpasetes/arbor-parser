@@ -22,7 +22,7 @@ import { SegmentedControl } from "./components/SegmentedControl";
  */
 function App() {
   const [sourceCode, setSourceCode] = useState("const x = 1 + 2");
-  const [vizMode, setVizMode] = useState<'tree' | 'rings'>('tree');
+  const [vizMode, setVizMode] = useState<"tree" | "rings">("tree");
 
   // Parse the code whenever it changes (always using TypeScript mode)
   const parseResult = parseCode(sourceCode);
@@ -30,7 +30,7 @@ function App() {
   return (
     <div
       style={{
-        minHeight: "100vh",
+        height: "100vh",
         display: "flex",
         flexDirection: "column",
       }}
@@ -85,21 +85,23 @@ function App() {
           }}
         >
           {/* Visualization Toggle - fixed to left */}
-          <div style={{
-            marginBottom: "1rem",
-            alignSelf: "flex-start",
-          }}>
+          <div
+            style={{
+              marginBottom: "1rem",
+              alignSelf: "flex-start",
+            }}
+          >
             <SegmentedControl
-              options={['Tree', 'Rings']}
+              options={["Tree", "Rings"]}
               selected={vizMode}
-              onChange={(mode) => setVizMode(mode as 'tree' | 'rings')}
+              onChange={(mode) => setVizMode(mode as "tree" | "rings")}
             />
           </div>
 
-          {/* Scrollable viz container */}
-          <div style={{ flex: 1, overflowY: "auto", overflowX: "auto" }}>
+          {/* Viz container */}
+          <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
             {parseResult.success ? (
-              vizMode === 'tree' ? (
+              vizMode === "tree" ? (
                 <ASTTree ast={parseResult.ast} />
               ) : (
                 <BlobVisualization ast={parseResult.ast} />
