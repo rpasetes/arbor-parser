@@ -69,15 +69,17 @@ const ast = ts.createSourceFile(
 #### Session Start Protocol
 
 ```bash
-# 1. Pull latest changes
+# 1. Pull latest changes (post-merge hook auto-imports JSONL → DB)
 git checkout main && git pull origin main
 
-# 2. Import any remote issue updates
-bd sync
+# 2. Verify Beads health
+bd info
 
 # 3. See what's ready to work on
 bd ready --json
 ```
+
+**Important:** Don't run `bd sync` after `git pull`! The **post-merge hook** automatically imports JSONL → DB. Running sync will fail with "JSONL is newer than database" because the hook already did the import. Just verify with `bd info` and proceed.
 
 #### During Session
 
