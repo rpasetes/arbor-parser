@@ -17,7 +17,7 @@ export interface ParseError {
  *
  * PARSING INSIGHT #1: Two-Phase Process
  * ==============================================
- * When you write code, the compiler does two main things:
+ * When you write code, the parser does two main things:
  * 1. LEXICAL ANALYSIS (tokenization): "const x = 5" → [CONST, IDENTIFIER, EQUALS, NUMBER]
  * 2. SYNTACTIC ANALYSIS (parsing): tokens → tree structure
  *
