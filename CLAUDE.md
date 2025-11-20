@@ -169,6 +169,50 @@ bd import  # JSONL → DB (use if JSONL is newer)
 - `bd sync` forces immediate flush when needed
 - Never manually edit issues.jsonl - always use bd commands
 
+#### Advanced Beads Features (Encouraged to Explore!)
+
+**Issue Type Taxonomy:**
+- `epic` - Large multi-session projects spanning multiple features
+- `feature` - New functionality or capabilities
+- `task` - Investigations, research, documentation work
+- `bug` - Fixing broken behavior discovered in testing
+- `chore` - Maintenance, refactoring, infrastructure work
+
+**Dependency Types as Semantic Relationships:**
+- `blocks` - "Can't implement X until Y is done" (hard blocker)
+- `discovered-from` - "While doing X, found we need Y" (captures exploration path)
+- `related` - "These solve similar problems" (conceptual link)
+- `parent-child` - Breaking down epics into smaller tasks (hierarchical)
+
+**Useful Commands for Exploration:**
+```bash
+# Visualize decision trees
+bd dep tree <issue-id>
+
+# Find all issues discovered during investigation
+bd list --json | jq '.[] | select(.dependencies[].type == "discovered-from")'
+
+# Label issues by area
+bd label add <issue-id> parser ui docs infra
+
+# Create epics for large projects
+bd create "Implement bidirectional highlighting" -t epic -p 1
+bd epic list  # View all epics
+
+# View dependency cycles (should be empty!)
+bd dep cycles
+```
+
+**Philosophy on Exploration:**
+Treat Beads as a **living knowledge base**, not just a checklist. Experiment with:
+- Different issue types for different work modes
+- Dependency relationships to capture "why" decisions were made
+- Retroactive issue creation for completed investigative work
+- Labels and metadata for organizing by domain
+- Epics for tracking multi-session initiatives
+
+The richer the metadata, the better future sessions can understand project history without re-reading all git commits.
+
 ### Git Workflow & Pull Requests
 
 **Branch Strategy:**
