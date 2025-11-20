@@ -63,12 +63,25 @@ const ast = ts.createSourceFile(
 ## Development Workflow
 
 ### Issue Tracking with Beads
-All tasks should be tracked in Beads. Before starting work:
+
+**Philosophy:** Beads isn't just task tracking - it's building a **knowledge graph** of the project's evolution. Track completed investigative/strategic work retroactively to create decision history, not just implementation history.
+
+#### Session Start Protocol
 
 ```bash
-# See what's ready to work on
-bd ready --json
+# 1. Pull latest changes
+git checkout main && git pull origin main
 
+# 2. Import any remote issue updates
+bd sync
+
+# 3. See what's ready to work on
+bd ready --json
+```
+
+#### During Session
+
+```bash
 # Create issues for new work discovered
 bd create "Description" -t feature -p 1
 
@@ -77,13 +90,128 @@ bd update <issue-id> --status in_progress
 
 # Close when complete
 bd close <issue-id> --reason "Implemented"
+
+# Link related issues to build dependency graph
+bd dep add <new-id> <parent-id> --type discovered-from
+bd dep add <blocked-id> <blocker-id> --type blocks
 ```
 
 **Key behaviors:**
 - Create issues proactively as work is discovered
-- Link discovered work with `bd dep add <new-id> <parent-id> --type discovered-from`
+- Link discovered work to maintain context between decisions
 - One issue `in_progress` at a time
 - Close issues immediately when complete, don't batch
+- Track **investigative work** (research, experiments) not just features
+
+#### Session End Protocol (Critical!)
+
+```bash
+# 1. Close all finished work
+bd close <ids> --reason "..."
+
+# 2. File remaining TODOs as issues
+bd create "Remaining work description" -t task -p N
+
+# 3. Force flush everything (bypasses 30s debounce)
+bd sync
+
+# 4. Commit Beads state
+git add .beads/issues.jsonl
+git commit -m "Update issue tracker"
+
+# 5. Push
+git push
+```
+
+**Why this matters:** Without `bd sync` at session end, changes stay in the database only. The sync protocol ensures:
+- Exports DB → JSONL (source of truth for git)
+- Commits and pulls latest changes
+- Imports remote updates → DB
+- Pushes to remote
+
+#### Beads Infrastructure Details
+
+**Architecture:**
+- **SQLite DB** (.beads/beads.db) - Local source of truth, gitignored
+- **JSONL file** (.beads/issues.jsonl) - Remote source of truth, in git
+- **Daemon** - Background process syncing DB ↔ JSONL (30s debounce)
+- **Git hooks** - Enforces consistency on git operations
+
+**Installed hooks:**
+- `pre-commit` - Flushes pending DB changes to JSONL before commit
+- `post-merge` - Imports updated JSONL to DB after pull
+- `pre-push` - Exports DB to JSONL before push (prevents stale JSONL)
+- `post-checkout` - Imports JSONL after branch changes
+
+**Troubleshooting:**
+
+If daemon won't start:
+```bash
+bd info  # Check daemon status and reason
+bd daemons logs . -n 100  # Read error logs
+```
+
+If "snapshot too old" error:
+```bash
+bd export  # Force re-export, creates fresh snapshot
+```
+
+If JSONL/DB diverge:
+```bash
+# Choose one based on which is more recent:
+bd export  # DB → JSONL (use if DB is newer)
+bd import  # JSONL → DB (use if JSONL is newer)
+```
+
+**Important Notes:**
+- Daemon auto-restarts on version upgrades
+- Changes batch within 30s window (good for rapid iteration)
+- `bd sync` forces immediate flush when needed
+- Never manually edit issues.jsonl - always use bd commands
+
+#### Advanced Beads Features (Encouraged to Explore!)
+
+**Issue Type Taxonomy:**
+- `epic` - Large multi-session projects spanning multiple features
+- `feature` - New functionality or capabilities
+- `task` - Investigations, research, documentation work
+- `bug` - Fixing broken behavior discovered in testing
+- `chore` - Maintenance, refactoring, infrastructure work
+
+**Dependency Types as Semantic Relationships:**
+- `blocks` - "Can't implement X until Y is done" (hard blocker)
+- `discovered-from` - "While doing X, found we need Y" (captures exploration path)
+- `related` - "These solve similar problems" (conceptual link)
+- `parent-child` - Breaking down epics into smaller tasks (hierarchical)
+
+**Useful Commands for Exploration:**
+```bash
+# Visualize decision trees
+bd dep tree <issue-id>
+
+# Find all issues discovered during investigation
+bd list --json | jq '.[] | select(.dependencies[].type == "discovered-from")'
+
+# Label issues by area
+bd label add <issue-id> parser ui docs infra
+
+# Create epics for large projects
+bd create "Implement bidirectional highlighting" -t epic -p 1
+bd epic list  # View all epics
+
+# View dependency cycles (should be empty!)
+bd dep cycles
+```
+
+**Philosophy on Exploration:**
+Treat Beads as a **living knowledge base**, not just a checklist. Experiment with:
+- Different issue types for different work modes
+- Dependency relationships to capture "why" decisions were made
+- Retroactive issue creation for completed investigative work
+- Labels and metadata for organizing by domain
+- Epics for tracking multi-session initiatives
+
+The richer the metadata, the better future sessions can understand project history without re-reading all git commits.
 
 ### Git Workflow & Pull Requests
 
