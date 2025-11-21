@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { EditorView, basicSetup } from 'codemirror';
 import { EditorState } from '@codemirror/state';
 import { javascript } from '@codemirror/lang-javascript';
-import { oneDark } from '@codemirror/theme-one-dark';
+import { fieldGuide } from '../theme/fieldGuideTheme';
 
 interface CodeEditorProps {
   value: string;
@@ -40,7 +40,7 @@ export function CodeEditor({ value, onChange }: CodeEditorProps) {
       extensions: [
         basicSetup,
         javascript({ typescript: true }), // TypeScript mode handles both JS and TS
-        oneDark,
+        fieldGuide, // Field guide theme
         EditorView.updateListener.of((update) => {
           if (update.docChanged) {
             const newValue = update.state.doc.toString();
@@ -54,6 +54,9 @@ export function CodeEditor({ value, onChange }: CodeEditorProps) {
       state: startState,
       parent: editorRef.current,
     });
+
+    // Ensure editor fills container and handles overflow
+    view.dom.style.height = '100%';
 
     viewRef.current = view;
 
@@ -83,24 +86,30 @@ export function CodeEditor({ value, onChange }: CodeEditorProps) {
     <div style={{
       display: 'flex',
       flexDirection: 'column',
-      gap: '0.5rem',
+      gap: 'var(--space-sm)',
       width: '100%',
       flex: 1,
+      minHeight: 0, // Key for flex scrolling
     }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <label style={{ fontWeight: 'bold' }}>
-          Source Code:
-        </label>
-      </div>
+      <label
+        className="specimen-label"
+        style={{
+          fontWeight: 600,
+          letterSpacing: '0.02em',
+          flexShrink: 0,
+        }}
+      >
+        Source Code:
+      </label>
       <div
         ref={editorRef}
+        className="paper-elevated"
         style={{
           width: '100%',
           flex: 1,
-          minHeight: '200px',
-          border: '1px solid #444',
+          minHeight: 0, // Allow flex to constrain height
+          overflow: 'hidden',
           borderRadius: '4px',
-          overflow: 'auto',
         }}
       />
     </div>
