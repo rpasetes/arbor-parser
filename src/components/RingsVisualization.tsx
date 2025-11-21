@@ -2,12 +2,13 @@ import { useEffect, useRef } from 'react';
 import * as d3 from 'd3';
 import * as ts from 'typescript';
 import { astRootToHierarchy, HierarchyNode } from '../utils/astToHierarchy';
+import { getInkGradient } from '../theme/botanical';
 
-interface BlobVisualizationProps {
+interface RingsVisualizationProps {
   ast: ts.SourceFile;
 }
 
-export function BlobVisualization({ ast }: BlobVisualizationProps) {
+export function RingsVisualization({ ast }: RingsVisualizationProps) {
   const svgRef = useRef<SVGSVGElement>(null);
 
   useEffect(() => {
@@ -30,6 +31,9 @@ export function BlobVisualization({ ast }: BlobVisualizationProps) {
     // Sum values (required before pack)
     root.sum(d => d.value || 1);
 
+    // Define type for pack layout node (includes x, y, r)
+    type PackNode = d3.HierarchyCircularNode<HierarchyNode>;
+
     // Function to calculate font size for a node
     const getFontSize = (depth: number) => {
       const baseSize = 40 - (depth * 3); // 2x the original max (was 20)
@@ -37,7 +41,7 @@ export function BlobVisualization({ ast }: BlobVisualizationProps) {
       return Math.max(baseSize, minSize);
     };
 
-    // Use font size as padding to visually tie labels to blobs
+    // Use font size as padding to visually tie labels to rings
     const maxFontSize = getFontSize(0);
     const pack = d3.pack<HierarchyNode>()
       .size([width - margin * 2, height - margin * 2])
@@ -58,36 +62,38 @@ export function BlobVisualization({ ast }: BlobVisualizationProps) {
     const g = svg.append('g')
       .attr('transform', `translate(${margin}, ${margin})`);
 
-    // Get all nodes (descendants)
-    const nodes = root.descendants();
+    // Get all nodes (descendants) with pack layout properties
+    const nodes = root.descendants() as PackNode[];
 
-    // Create color scale based on depth
-    const colorScale = d3.scaleSequential()
-      .domain([0, root.height])
-      .interpolator(d3.interpolateViridis);
+    // Create color scale based on depth (using ink gradient)
+    const maxDepth = root.height;
 
     // Create groups for each node
     const node = g.selectAll('g')
       .data(nodes)
       .join('g')
-      .attr('transform', d => `translate(${d.x},${d.y})`);
+      .attr('transform', d => `translate(${d.x!},${d.y!})`);
 
-    // Add circles
+    // Add circles with ink-based coloring
     node.append('circle')
-      .attr('r', d => d.r)
-      .attr('fill', d => colorScale(d.depth))
-      .attr('fill-opacity', 0.6)
-      .attr('stroke', '#333')
+      .attr('r', d => d.r!)
+      .attr('fill', d => getInkGradient(d.depth, maxDepth))
+      .attr('fill-opacity', 0.15)
+      .attr('stroke', d => getInkGradient(d.depth, maxDepth))
       .attr('stroke-width', 1.5)
       .style('cursor', 'pointer')
       .on('mouseenter', function() {
         d3.select(this)
-          .attr('fill-opacity', 0.9)
+          .attr('fill', 'var(--vermillion)')
+          .attr('fill-opacity', 0.3)
+          .attr('stroke', 'var(--vermillion)')
           .attr('stroke-width', 2.5);
       })
       .on('mouseleave', function(_, d) {
         d3.select(this)
-          .attr('fill-opacity', 0.6)
+          .attr('fill', getInkGradient(d.depth, maxDepth))
+          .attr('fill-opacity', 0.15)
+          .attr('stroke', getInkGradient(d.depth, maxDepth))
           .attr('stroke-width', 1.5);
       });
 
@@ -100,33 +106,33 @@ export function BlobVisualization({ ast }: BlobVisualizationProps) {
       const fontSize = getFontSize(d.depth);
 
       // Only show label if circle is large enough
-      if (d.r > 30) {
+      if (d.r! > 30) {
         // Create a circular path for the text to follow
         const pathId = `circle-path-${i}`;
 
         // Create arc path along the top of the circle
         // Start at -90 degrees (top), arc radius slightly inside the circle
-        const arcRadius = d.r - 5;
+        const arcRadius = d.r! - 5;
 
         defs.append('path')
           .attr('id', pathId)
           .attr('d', `
-            M ${d.x - arcRadius}, ${d.y}
-            A ${arcRadius}, ${arcRadius} 0 0 1 ${d.x + arcRadius}, ${d.y}
+            M ${d.x! - arcRadius}, ${d.y!}
+            A ${arcRadius}, ${arcRadius} 0 0 1 ${d.x! + arcRadius}, ${d.y!}
           `);
 
         // Truncate long labels based on circle circumference
         const maxChars = Math.floor((arcRadius * Math.PI) / (fontSize * 0.6));
         const truncatedLabel = label.length > maxChars ? label.slice(0, maxChars - 2) + '...' : label;
 
-        // Add text element with textPath
+        // Add text element with textPath (ink color, serif font)
         g.append('text')
           .style('font-size', `${fontSize}px`)
-          .style('fill', '#fff')
+          .style('fill', 'var(--ink-fresh)')
           .style('pointer-events', 'none')
-          .style('font-family', 'monospace')
-          .style('font-weight', 'bold')
-          .style('text-shadow', '0 0 3px rgba(0,0,0,0.8), 0 0 6px rgba(0,0,0,0.6)')
+          .style('font-family', 'var(--font-body)')
+          .style('font-weight', '600')
+          .style('letter-spacing', '-0.01em')
           .append('textPath')
           .attr('href', `#${pathId}`)
           .attr('startOffset', '50%')
@@ -142,10 +148,9 @@ export function BlobVisualization({ ast }: BlobVisualizationProps) {
   }, [ast]);
 
   return (
-    <div style={{
-      background: '#1a1a1a',
-      padding: '20px',
-      borderRadius: '8px',
+    <div className="tree-container" style={{
+      width: '100%',
+      height: '100%',
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'center',
