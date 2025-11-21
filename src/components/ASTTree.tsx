@@ -54,7 +54,6 @@ export function ASTTree({ ast, onNodeClick, highlightedNode }: ASTTreeProps) {
           flex: 1,
           overflowY: "auto",
           overflowX: "auto",
-          minWidth: 0, // Allow container to shrink
         }}
       >
         <div style={{ minWidth: "max-content" }}>
