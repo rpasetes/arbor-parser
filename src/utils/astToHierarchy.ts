@@ -5,6 +5,7 @@ export interface HierarchyNode {
   children?: HierarchyNode[];
   value?: number;
   syntaxKind?: ts.SyntaxKind;
+  astNode: ts.Node; // Reference to original AST node for hover highlighting
 }
 
 /**
@@ -47,6 +48,7 @@ export function astToHierarchy(node: ts.Node): HierarchyNode {
     name: nodeName,
     syntaxKind,
     value: 1, // Uniform sizing for now - can make dynamic later
+    astNode: node, // Store reference to original AST node
   };
 
   if (children.length > 0) {
@@ -71,6 +73,7 @@ export function astRootToHierarchy(sourceFile: ts.SourceFile): HierarchyNode {
     name: 'Program',
     syntaxKind: ts.SyntaxKind.SourceFile,
     value: 1,
+    astNode: sourceFile, // Store reference to original AST node
     children: sourceFile.statements.map(stmt => astToHierarchy(stmt)),
   };
 }
