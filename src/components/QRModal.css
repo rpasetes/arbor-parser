@@ -1,0 +1,350 @@
+/**
+ * QR Modal - Archival Specimen Card
+ *
+ * Inspired by pressed botanical specimens in museum collections.
+ * The modal appears like opening a protective sleeve to reveal a preserved sample.
+ */
+
+/* Backdrop - like peering into a specimen drawer */
+.qr-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(
+    circle at center,
+    rgba(45, 31, 20, 0.85) 0%,
+    rgba(45, 31, 20, 0.92) 100%
+  );
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-xl);
+  animation: qr-backdrop-fade-in 400ms var(--ease-natural);
+}
+
+@keyframes qr-backdrop-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Specimen Card - aged archival cardstock */
+.qr-modal-card {
+  background: linear-gradient(
+    135deg,
+    var(--paper-pristine) 0%,
+    var(--paper-aged) 50%,
+    var(--paper-weathered) 100%
+  );
+  border: 3px double var(--ink-brown);
+  border-radius: 6px;
+  padding: var(--space-xxl);
+  max-width: 480px;
+  width: 100%;
+  position: relative;
+  box-shadow:
+    0 8px 24px rgba(45, 31, 20, 0.4),
+    0 16px 48px rgba(45, 31, 20, 0.3),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+  animation: qr-card-enter 600ms var(--ease-growth);
+
+  /* Archival paper texture */
+  background-image: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 1px,
+      rgba(61, 40, 23, 0.02) 1px,
+      rgba(61, 40, 23, 0.02) 2px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 1px,
+      rgba(61, 40, 23, 0.02) 1px,
+      rgba(61, 40, 23, 0.02) 2px
+    );
+}
+
+@keyframes qr-card-enter {
+  from {
+    opacity: 0;
+    transform: scale(0.92) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Decorative corner pins - like mounting pins */
+.qr-pin {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 35% 35%,
+    rgba(139, 115, 85, 0.7),
+    rgba(61, 40, 23, 0.9)
+  );
+  box-shadow:
+    0 2px 4px rgba(45, 31, 20, 0.3),
+    inset 0 1px 2px rgba(255, 255, 255, 0.2),
+    inset 0 -1px 2px rgba(45, 31, 20, 0.3);
+  pointer-events: none;
+}
+
+.qr-pin::after {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 30% 30%,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+}
+
+.qr-pin-tl {
+  top: 18px;
+  left: 18px;
+}
+.qr-pin-tr {
+  top: 18px;
+  right: 18px;
+}
+.qr-pin-bl {
+  bottom: 18px;
+  left: 18px;
+}
+.qr-pin-br {
+  bottom: 18px;
+  right: 18px;
+}
+
+/* Header - Scientific taxonomy style */
+.qr-header {
+  text-align: center;
+  margin-bottom: var(--space-lg);
+  padding-bottom: var(--space-md);
+  border-bottom: 2px solid var(--paper-stained);
+  position: relative;
+}
+
+.qr-header::after {
+  content: "✦";
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--paper-aged);
+  padding: 0 var(--space-sm);
+  color: var(--ink-light);
+  font-size: 0.875rem;
+}
+
+.qr-taxonomy {
+  font-family: var(--font-display);
+  margin-bottom: var(--space-xs);
+}
+
+.qr-genus {
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: var(--paper-pristine);
+  font-style: italic;
+  letter-spacing: -0.01em;
+  text-shadow: 0 2px 4px rgba(45, 31, 20, 0.6);
+}
+
+.qr-species {
+  font-size: 1.25rem;
+  color: var(--paper-aged);
+  margin-left: var(--space-sm);
+  font-style: italic;
+  font-weight: 400;
+  text-shadow: 0 1px 3px rgba(45, 31, 20, 0.5);
+}
+
+.qr-collection-info {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--paper-pristine);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  text-shadow: 0 1px 3px rgba(45, 31, 20, 0.5);
+}
+
+.qr-number {
+  font-weight: 600;
+  color: var(--paper-aged);
+  text-shadow: 0 1px 3px rgba(45, 31, 20, 0.5);
+}
+
+/* QR Code specimen container */
+.qr-specimen-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--space-xl);
+  background: var(--paper-pristine);
+  border: 2px solid var(--paper-stained);
+  border-radius: 4px;
+  margin-bottom: var(--space-lg);
+  position: relative;
+  box-shadow:
+    inset 0 2px 8px rgba(45, 31, 20, 0.04),
+    0 2px 4px rgba(45, 31, 20, 0.06);
+}
+
+.qr-image {
+  width: 280px;
+  height: 280px;
+  border-radius: 4px;
+  padding: var(--space-md);
+  background: var(--paper-pristine);
+  box-shadow:
+    0 2px 8px rgba(45, 31, 20, 0.08),
+    inset 0 0 0 1px var(--paper-stained);
+  animation: qr-specimen-reveal 800ms var(--ease-natural) 300ms both;
+}
+
+@keyframes qr-specimen-reveal {
+  from {
+    opacity: 0;
+    transform: scale(0.9) rotate(-2deg);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+.qr-specimen-label {
+  margin-top: var(--space-md);
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: 0.875rem;
+  color: var(--ink-brown);
+  line-height: 1.6;
+}
+
+.qr-specimen-label em {
+  font-style: italic;
+  font-weight: 600;
+  color: var(--ink-fresh);
+}
+
+.qr-specimen-label small {
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  color: var(--ink-faded);
+}
+
+/* Field notes section */
+.qr-notes {
+  background: var(--paper-weathered);
+  border: 1px solid var(--paper-stained);
+  border-left: 3px solid var(--vermillion);
+  border-radius: 3px;
+  padding: var(--space-md);
+  margin-bottom: var(--space-lg);
+  animation: qr-notes-fade-in 600ms var(--ease-natural) 500ms both;
+}
+
+@keyframes qr-notes-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.qr-note-text {
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  line-height: 1.7;
+  color: var(--ink-brown);
+  margin: 0 0 var(--space-sm) 0;
+}
+
+.qr-note-text strong {
+  color: var(--ink-fresh);
+  font-weight: 600;
+}
+
+.qr-url-display {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--ink-light);
+  background: var(--paper-pristine);
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: 2px;
+  border: 1px solid var(--paper-stained);
+  word-break: break-all;
+  line-height: 1.5;
+}
+
+/* Close button - archival closure */
+.qr-close-button {
+  width: 100%;
+  padding: var(--space-md);
+  background: var(--ink-brown);
+  color: var(--paper-pristine);
+  border: none;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all var(--duration-quick) var(--ease-natural);
+  box-shadow:
+    0 2px 4px rgba(45, 31, 20, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.qr-close-button:hover {
+  background: var(--vermillion);
+  transform: translateY(-1px);
+  box-shadow:
+    0 4px 8px rgba(200, 79, 49, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.qr-close-button:active {
+  transform: translateY(0);
+  box-shadow:
+    0 1px 2px rgba(45, 31, 20, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .qr-modal-card {
+    padding: var(--space-xl);
+    max-width: 90vw;
+  }
+
+  .qr-genus {
+    font-size: 1.5rem;
+  }
+
+  .qr-species {
+    font-size: 1.125rem;
+  }
+
+  .qr-image {
+    max-width: 100%;
+    height: auto;
+  }
+}
