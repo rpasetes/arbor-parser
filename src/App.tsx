@@ -6,6 +6,7 @@ import { RingsVisualization } from "./components/RingsVisualization";
 import { ASTNodes } from "./components/ASTNodes";
 import { SegmentedControl } from "./components/SegmentedControl";
 import { CustomSelect } from "./components/CustomSelect";
+import { QRModal } from "./components/QRModal";
 import { examples } from "./examples";
 
 /**
@@ -40,6 +41,7 @@ function App() {
     examples[0].name,
   );
   const [vizMode, setVizMode] = useState<"nodes" | "rings">("nodes");
+  const [isQRModalOpen, setIsQRModalOpen] = useState(false);
 
   // Visualizer → Editor highlighting state
   const [hoveredNode, setHoveredNode] = useState<ts.Node | null>(null); // Hover node → highlight code
@@ -76,11 +78,38 @@ function App() {
     >
       {/* Header */}
       <header className="app-header">
-        <h1 className="app-title">Arbor Parser</h1>
+        <h1 className="app-title" style={{
+          textShadow: "0 1px 2px rgba(255, 255, 255, 0.8), 0 2px 4px rgba(45, 31, 20, 0.15)",
+          filter: "drop-shadow(0 1px 3px rgba(255, 255, 255, 0.5))"
+        }}>
+          Arb
+          <span
+            onClick={() => setIsQRModalOpen(true)}
+            style={{
+              cursor: "pointer",
+              display: "inline-block",
+              transition: "all var(--duration-quick) var(--ease-natural)",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = "var(--vermillion)";
+              e.currentTarget.style.transform = "scale(1.15) rotate(-5deg)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = "";
+              e.currentTarget.style.transform = "";
+            }}
+          >
+            o
+          </span>
+          r Parser
+        </h1>
         <p className="app-subtitle">
           See how parsers read your code. Every syntax tree, visualized.
         </p>
       </header>
+
+      {/* QR Code Modal */}
+      <QRModal isOpen={isQRModalOpen} onClose={() => setIsQRModalOpen(false)} />
 
       {/* Split layout: Editor left, Tree right */}
       <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
