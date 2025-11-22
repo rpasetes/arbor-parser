@@ -6,10 +6,17 @@ import { getInkGradient } from '../theme/botanical';
 
 interface RingsVisualizationProps {
   ast: ts.SourceFile;
+  onNodeHover?: (node: ts.Node | null) => void;
 }
 
-export function RingsVisualization({ ast }: RingsVisualizationProps) {
+export function RingsVisualization({ ast, onNodeHover }: RingsVisualizationProps) {
   const svgRef = useRef<SVGSVGElement>(null);
+  const onNodeHoverRef = useRef(onNodeHover);
+
+  // Keep ref updated with latest callback
+  useEffect(() => {
+    onNodeHoverRef.current = onNodeHover;
+  }, [onNodeHover]);
 
   useEffect(() => {
     if (!svgRef.current) return;
@@ -82,12 +89,14 @@ export function RingsVisualization({ ast }: RingsVisualizationProps) {
       .attr('stroke', d => getInkGradient(d.depth, maxDepth))
       .attr('stroke-width', 1.5)
       .style('cursor', 'pointer')
-      .on('mouseenter', function() {
+      .on('mouseenter', function(_, d) {
         d3.select(this)
           .attr('fill', 'var(--vermillion)')
           .attr('fill-opacity', 0.3)
           .attr('stroke', 'var(--vermillion)')
           .attr('stroke-width', 2.5);
+        // Highlight corresponding code in editor
+        onNodeHoverRef.current?.(d.data.astNode);
       })
       .on('mouseleave', function(_, d) {
         d3.select(this)
@@ -95,6 +104,8 @@ export function RingsVisualization({ ast }: RingsVisualizationProps) {
           .attr('fill-opacity', 0.15)
           .attr('stroke', getInkGradient(d.depth, maxDepth))
           .attr('stroke-width', 1.5);
+        // Clear highlight in editor
+        onNodeHoverRef.current?.(null);
       });
 
     // Create defs for curved text paths

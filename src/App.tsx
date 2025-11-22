@@ -150,7 +150,10 @@ function App() {
                   onNodeHover={setHoveredNode}
                 />
               ) : (
-                <RingsVisualization ast={parseResult.ast} />
+                <RingsVisualization
+                  ast={parseResult.ast}
+                  onNodeHover={setHoveredNode}
+                />
               )
             ) : (
               <div
