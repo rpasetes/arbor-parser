@@ -1,14 +1,14 @@
 import * as ts from "typescript";
 import { ASTNode } from "./ASTNode";
 
-interface ASTTreeProps {
+interface ASTNodesProps {
   ast: ts.SourceFile;
   onNodeClick?: (node: ts.Node) => void;
   highlightedNode?: ts.Node;
 }
 
 /**
- * ASTTree Component
+ * ASTNodes Component
  *
  * PARSING INSIGHT: Tree Traversal
  * ================================
@@ -31,7 +31,7 @@ interface ASTTreeProps {
  *
  * Every tool follows this pattern: Parse → Traverse → Transform/Analyze
  */
-export function ASTTree({ ast, onNodeClick, highlightedNode }: ASTTreeProps) {
+export function ASTNodes({ ast, onNodeClick, highlightedNode }: ASTNodesProps) {
   return (
     <div className="tree-container" style={{
       width: "100%",
