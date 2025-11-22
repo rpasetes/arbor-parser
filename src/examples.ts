@@ -16,7 +16,15 @@ export interface Example {
 export const examples: Example[] = [
   {
     name: "Hello World",
-    code: `function greet() {
+    code: `/**
+ * Hello World - Your First AST
+ *
+ * Hover over any node in the tree to see its code highlighted!
+ * Try switching between Nodes and Rings views to explore different
+ * ways of visualizing the same structure.
+ */
+
+function greet() {
   console.log("Hello, World!");
 }`,
   },
