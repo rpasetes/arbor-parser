@@ -21,6 +21,9 @@ export function RingsVisualization({ ast, onNodeHover }: RingsVisualizationProps
     onNodeHoverRef.current = onNodeHover;
   }, [onNodeHover]);
 
+  // Constants for layout
+  const MARGIN = 50;
+
   useEffect(() => {
     if (!svgRef.current) return;
 
@@ -33,7 +36,7 @@ export function RingsVisualization({ ast, onNodeHover }: RingsVisualizationProps
     // Set up dimensions
     const width = 800;
     const height = 600;
-    const margin = 50; // Increased margin to prevent label clipping
+    const margin = MARGIN; // Increased margin to prevent label clipping
 
     // Create D3 hierarchy
     const root = d3.hierarchy<HierarchyNode>(hierarchyData);
@@ -109,6 +112,9 @@ export function RingsVisualization({ ast, onNodeHover }: RingsVisualizationProps
         // Re-select group from DOM (not closure reference)
         const currentSvg = d3.select(svgRef.current);
         const currentGroup = currentSvg.select('.zoom-group');
+
+        // Cancel any in-progress transitions to avoid label state inconsistencies
+        currentGroup.interrupt();
 
         // Hide all current labels
         currentGroup.selectAll('.ring-label').style('opacity', 0);
@@ -226,7 +232,7 @@ export function RingsVisualization({ ast, onNodeHover }: RingsVisualizationProps
     g.transition()
       .duration(300)
       .ease(d3.easeCubicOut)
-      .attr('transform', `translate(${50}, ${50})`)
+      .attr('transform', `translate(${MARGIN}, ${MARGIN})`)
       .on('end', () => {
         // Show all labels again
         g.selectAll('.ring-label').style('opacity', 1);

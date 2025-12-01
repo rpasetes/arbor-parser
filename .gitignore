@@ -24,3 +24,6 @@ dist-ssr
 *.sln
 *.sw?
 .claude/
+
+# TypeScript build info (auto-generated, causes noisy diffs)
+*.tsbuildinfo
