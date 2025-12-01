@@ -119,8 +119,9 @@ export function RingsVisualization({ ast, onNodeHover }: RingsVisualizationProps
         const centerX = viewWidth / 2;
         const centerY = viewHeight / 2;
 
-        // Scale so this circle fills the viewport like the root did
-        const targetSize = Math.min(viewWidth, viewHeight) * 0.8;
+        // Scale so this circle fills the viewport exactly like the root does by default
+        // The root circle naturally fills the pack layout size, so we match that
+        const targetSize = Math.min(viewWidth, viewHeight);
         const scale = targetSize / (clickedNode.r! * 2);
 
         // Calculate translation to center the circle
