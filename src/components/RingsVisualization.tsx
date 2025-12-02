@@ -16,6 +16,10 @@ export function RingsVisualization({ ast, onNodeHover }: RingsVisualizationProps
   // Track focused node for UI (breadcrumbs, reset button)
   const [focusedNode, setFocusedNode] = useState<ts.Node | null>(null);
 
+  // Store label elements for dynamic updates across renders
+  type PackNode = d3.HierarchyCircularNode<HierarchyNode>;
+  const labelElementsRef = useRef<Array<{ node: PackNode; text: SVGTextElement; pathId: string }>>([]);
+
   // Keep ref updated with latest callback
   useEffect(() => {
     onNodeHoverRef.current = onNodeHover;
@@ -43,9 +47,6 @@ export function RingsVisualization({ ast, onNodeHover }: RingsVisualizationProps
 
     // Sum values (required before pack)
     root.sum(d => d.value || 1);
-
-    // Define type for pack layout node (includes x, y, r)
-    type PackNode = d3.HierarchyCircularNode<HierarchyNode>;
 
     // Function to calculate font size for a node
     const getFontSize = (depth: number) => {
@@ -85,8 +86,8 @@ export function RingsVisualization({ ast, onNodeHover }: RingsVisualizationProps
     // Create defs for curved text paths early
     const defs = svg.append('defs');
 
-    // Store label elements for dynamic updates (declare before use!)
-    const labelElements: Array<{ node: PackNode; text: d3.Selection<SVGTextElement, unknown, null, undefined>; pathId: string }> = [];
+    // Reset label elements for this render
+    labelElementsRef.current = [];
 
     // Create groups for each node
     const node = g.selectAll('g')
@@ -95,7 +96,7 @@ export function RingsVisualization({ ast, onNodeHover }: RingsVisualizationProps
       .attr('transform', d => `translate(${d.x!},${d.y!})`);
 
     // Add circles with ink-based coloring
-    const circles = node.append('circle')
+    node.append('circle')
       .attr('r', d => d.r!)
       .attr('fill', d => getInkGradient(d.depth, maxDepth))
       .attr('fill-opacity', 0.15)
@@ -141,7 +142,7 @@ export function RingsVisualization({ ast, onNodeHover }: RingsVisualizationProps
           .attr('transform', `translate(${margin + translateX}, ${margin + translateY}) scale(${scale})`)
           .on('end', () => {
             // After zoom completes, show label for the clicked node (new top-level)
-            const clickedLabel = labelElements.find(l => l.node === clickedNode);
+            const clickedLabel = labelElementsRef.current.find(l => l.node === clickedNode);
             if (clickedLabel) {
               d3.select(clickedLabel.text).style('opacity', 1);
             }
@@ -211,7 +212,10 @@ export function RingsVisualization({ ast, onNodeHover }: RingsVisualizationProps
           .style('pointer-events', 'none') // Also set on textPath
           .text(truncatedLabel);
 
-        labelElements.push({ node: d, text: textElement.node()?.parentElement as any, pathId });
+        const textNode = textElement.node();
+        if (textNode) {
+          labelElementsRef.current.push({ node: d, text: textNode, pathId });
+        }
       }
     });
 
@@ -279,6 +283,13 @@ export function RingsVisualization({ ast, onNodeHover }: RingsVisualizationProps
               e.currentTarget.style.backgroundColor = 'var(--paper-weathered)';
               e.currentTarget.style.borderColor = 'var(--ink-light)';
               e.currentTarget.style.color = 'var(--ink-brown)';
+            }}
+            onFocus={(e) => {
+              e.currentTarget.style.outline = '2px solid var(--vermillion)';
+              e.currentTarget.style.outlineOffset = '2px';
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.outline = '';
             }}
           >
             ← Reset View
