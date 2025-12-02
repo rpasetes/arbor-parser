@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import * as ts from "typescript";
 import { parseCode } from "./utils/parser";
 import { CodeEditor } from "./components/CodeEditor";
@@ -47,7 +47,8 @@ function App() {
   const [hoveredNode, setHoveredNode] = useState<ts.Node | null>(null); // Hover node → highlight code
 
   // Parse the code whenever it changes (always using TypeScript mode)
-  const parseResult = parseCode(sourceCode);
+  // Memoize to prevent re-parsing on every render (only when sourceCode changes)
+  const parseResult = useMemo(() => parseCode(sourceCode), [sourceCode]);
 
   // Handle example selection
   const handleExampleChange = (exampleName: string) => {
